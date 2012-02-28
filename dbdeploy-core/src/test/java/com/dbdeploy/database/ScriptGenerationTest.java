@@ -3,11 +3,11 @@ package com.dbdeploy.database;
 import com.dbdeploy.ChangeScriptApplier;
 import com.dbdeploy.Controller;
 import com.dbdeploy.appliers.TemplateBasedApplier;
+import com.dbdeploy.database.changelog.ChangeLogEntry;
 import com.dbdeploy.database.changelog.DatabaseSchemaVersionManager;
 import com.dbdeploy.exceptions.SchemaVersionTrackingException;
 import com.dbdeploy.scripts.ChangeScript;
 import com.dbdeploy.scripts.ChangeScriptRepository;
-import com.dbdeploy.scripts.StubChangeScript;
 import org.junit.Test;
 
 import java.io.*;
@@ -32,23 +32,20 @@ public class ScriptGenerationTest {
 	}
 
 	private void runIntegratedTestAndConfirmOutputResults(String syntaxName) throws Exception {
-
 		StringWriter writer = new StringWriter();
 
-		ChangeScript changeOne = new StubChangeScript(1, "001_change.sql", "-- contents of change script 1");
-		ChangeScript changeTwo = new StubChangeScript(2, "002_change.sql", "-- contents of change script 2");
+		ChangeScript changeOne = new ChangeScript(1, "001_change.sql", "-- contents of change script 1", "undoContent1");
+		ChangeScript changeTwo = new ChangeScript(2, "002_change.sql", "-- contents of change script 2", "undoContent2");
 
 		List<ChangeScript> changeScripts = Arrays.asList(changeOne, changeTwo);
 		ChangeScriptRepository changeScriptRepository = new ChangeScriptRepository(changeScripts);
-
-
 
 		final StubSchemaManager schemaManager = new StubSchemaManager();
 		ChangeScriptApplier applier = new TemplateBasedApplier(writer, syntaxName, "changelog", ";", DelimiterType.normal, null);
 		Controller controller = new Controller(changeScriptRepository, schemaManager, applier, null);
 
 		controller.processChangeScripts(Long.MAX_VALUE);
-
+		
 		assertEquals(readExpectedFileContents(getExpectedFilename(syntaxName)), writer.toString());
 	}
 
@@ -88,7 +85,12 @@ public class ScriptGenerationTest {
 		}
 
 		@Override
-		public List<Long> getAppliedChanges() throws SchemaVersionTrackingException {
+		public List<Long> findChangeLogEntryIds() throws SchemaVersionTrackingException {
+			return Collections.emptyList();
+		}
+		
+		@Override
+		public List<ChangeLogEntry> findChangeLogEntries() throws SchemaVersionTrackingException {
 			return Collections.emptyList();
 		}
 	}

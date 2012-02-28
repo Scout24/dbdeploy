@@ -1,39 +1,52 @@
 package com.dbdeploy.scripts;
 
+import static com.dbdeploy.ConstraintUtils.ensureGreaterThanZero;
+import static com.dbdeploy.ConstraintUtils.ensureNotNull;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import com.dbdeploy.exceptions.DbDeployException;
 
-import java.io.*;
+/*
+ * (michael)
+ * During a refactoring this has become a tuple (id, description, doContent, undoContent)
+ * It is a tuple to ensure that the file contents fit to the checksum.
+ * 
+ * Since most of the change scripts have already been executed,
+ * a lazy loading mechanism for content and checksum is more economical.
+ * But still we would have to ensure, that the checksum has not changed when executing the script 
+ * (which is after checksum-validation).
+ * 
+ * @author Graham Tackley
+ * @author Michael Gruber
+ */
 
-public class ChangeScript implements Comparable {
-
-	private final long id;
-	private final File file;
-	private final String description;
-    private final String encoding;
+public class ChangeScript implements Comparable<ChangeScript> {
 	private static final String UNDO_MARKER = "--//@UNDO";
 
-	public ChangeScript(long id) {
-		this(id, "test");
-	}
+	private final long id;
+	private final String checksum;
+	private final String doContent;
+	private final String undoContent;
+	private final String description;
 
-    public ChangeScript(long id, String description) {
-        this.id = id;
-        this.file = null;
-        this.description = description;
-        this.encoding = "UTF-8";
+    public ChangeScript(final long id, final String description, final String doContent, final String undoContent) {
+    	this.id = ensureGreaterThanZero("id", id);
+    	this.description = ensureNotNull("description", description);
+    	this.doContent = ensureNotNull("doContent", doContent);
+    	this.undoContent = ensureNotNull("encoding", undoContent);
+    	this.checksum = sha256Hex(doContent + undoContent);
     }
-
-	public ChangeScript(long id, File file, String encoding) {
-		this.id = id;
-		this.file = file;
-		this.description = file.getName();
-        this.encoding = encoding;
+    
+	public ChangeScript(final long id, final File file, final String encoding) {
+		this(id, ensureNotNull("file", file).getName(), getFileContents(file, ensureNotNull("encoding", encoding), false), getFileContents(file, encoding, true));
 	}
-
-	public File getFile() {
-		return file;
-	}
-
+	
 	public long getId() {
 		return id;
 	}
@@ -42,8 +55,7 @@ public class ChangeScript implements Comparable {
 		return description;
 	}
 
-	public int compareTo(Object o) {
-		ChangeScript other = (ChangeScript) o;
+	public int compareTo(ChangeScript other) {
 		return Long.valueOf(this.id).compareTo(other.id);
 	}
 
@@ -53,16 +65,17 @@ public class ChangeScript implements Comparable {
 	}
 
 	public String getContent() {
-		return getFileContents(false);
+		return doContent;
 	}
 
 	public String getUndoContent() {
-		return getFileContents(true);
+		return undoContent;
 	}
 
-	private String getFileContents(boolean onlyAfterUndoMarker) {
+	private static String getFileContents(final File file, final String encoding, final boolean onlyAfterUndoMarker) {
+		
 		try {
-			StringBuilder content = new StringBuilder();
+			final StringBuilder content = new StringBuilder();
 			boolean foundUndoMarker = false;
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
 
@@ -91,5 +104,10 @@ public class ChangeScript implements Comparable {
 		} catch (IOException e) {
 			throw new DbDeployException("Failed to read change script file", e);
 		}
+	}
+
+	public String getChecksum()  {
+		return checksum;
+		
 	}
 }

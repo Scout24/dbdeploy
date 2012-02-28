@@ -39,8 +39,8 @@ public class PrettyPrinterTest {
 
 	@Test
 	public void canFormatAChangeScriptList() throws Exception {
-		ChangeScript change1 = new ChangeScript(1);
-		ChangeScript change3 = new ChangeScript(3);
+		ChangeScript change1 = new ChangeScript(1, "description1", "doContent1", "undoContent1");
+		ChangeScript change3 = new ChangeScript(3, "description3", "doContent3", "undoContent3");
 		assertEquals("1, 3", prettyPrinter.formatChangeScriptList(Arrays.asList(change1, change3)));
 	}
 }

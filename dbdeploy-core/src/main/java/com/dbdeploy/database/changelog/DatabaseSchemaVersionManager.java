@@ -24,27 +24,40 @@ public class DatabaseSchemaVersionManager implements AppliedChangesProvider {
         this.queryExecuter = queryExecuter;
         this.changeLogTableName = changeLogTableName;
     }
+    
+	public List<Long> findChangeLogEntryIds() {
+		final List<ChangeLogEntry> changeLogEntries = findChangeLogEntries();
+		final List<Long> ids = new ArrayList<Long>();
+		
+		for (final ChangeLogEntry changeLogEntry: changeLogEntries) {
+			ids.add(changeLogEntry.getId());
+		}
+		
+		return ids;
+	}
 
-	public List<Long> getAppliedChanges() {
+	public List<ChangeLogEntry> findChangeLogEntries() {
 		try {
 			ResultSet rs = queryExecuter.executeQuery(
-					"SELECT change_number FROM " + changeLogTableName + "  ORDER BY change_number");
-
-			List<Long> changeNumbers = new ArrayList<Long>();
-
+					"SELECT * FROM " + changeLogTableName + "  ORDER BY change_number");
+			
+			List<ChangeLogEntry> changeLogsEntries = new ArrayList<ChangeLogEntry>();
+			
 			while (rs.next()) {
-				changeNumbers.add(rs.getLong(1));
+				final ChangeLogEntry changeLogEntry = new ChangeLogEntry(
+						rs.getLong(1), rs.getTimestamp(2), rs.getString(3), rs.getString(4), rs.getString(5));
+				changeLogsEntries.add(changeLogEntry);
 			}
-
+			
 			rs.close();
-
-			return changeNumbers;
+			
+			return changeLogsEntries;
 		} catch (SQLException e) {
-			throw new SchemaVersionTrackingException("Could not retrieve change log from database because: "
+			throw new SchemaVersionTrackingException("Could not retrieve change log entry from database because: "
 					+ e.getMessage(), e);
 		}
 	}
-
+	
     public String getChangelogDeleteSql(ChangeScript script) {
 		return String.format(
 			"DELETE FROM " + changeLogTableName + " WHERE change_number = %d",
@@ -54,27 +67,28 @@ public class DatabaseSchemaVersionManager implements AppliedChangesProvider {
     public void recordScriptApplied(ChangeScript script) {
         try {
             queryExecuter.execute(
-                    "INSERT INTO " + changeLogTableName + " (change_number, complete_dt, applied_by, description)" +
-                            " VALUES (?, ?, ?, ?)",
+                    "INSERT INTO " + changeLogTableName + " (change_number, complete_dt, applied_by, description, checksum)" +
+                            " VALUES (?, ?, ?, ?, ?)",
                     script.getId(),
                     new Timestamp(timeProvider.now().getTime()),
                     queryExecuter.getDatabaseUsername(),
-                    script.getDescription()
+                    script.getDescription(),
+                    script.getChecksum()
                     );
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new SchemaVersionTrackingException("Could not update change log because: "
                     + e.getMessage(), e);
         }
     }
 
-    public void setTimeProvider(CurrentTimeProvider timeProvider) {
+    public void setTimeProvider(final CurrentTimeProvider timeProvider) {
         this.timeProvider = timeProvider;
     }
 
     public static class CurrentTimeProvider {
-
         public Date now() {
             return new Date();
         }
     }
+
 }

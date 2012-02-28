@@ -32,9 +32,9 @@ public class ControllerTest {
 	public void setUp() {
 		controller = new Controller(availableChangeScriptsProvider, appliedChangesProvider, applier, undoApplier);
 
-		change1 = new ChangeScript(1);
-		change2 = new ChangeScript(2);
-		change3 = new ChangeScript(3);
+		change1 = new ChangeScript(1, "description1", "doContent1", "undoContent1");
+		change2 = new ChangeScript(2, "description2", "doContent2", "undoContent2");
+		change3 = new ChangeScript(3, "description3", "doContent3", "undoContent3");
 
         when(availableChangeScriptsProvider.getAvailableChangeScripts())
 				.thenReturn(Arrays.asList(change1, change2, change3));
@@ -42,7 +42,7 @@ public class ControllerTest {
 
 	@Test
 	public void shouldApplyChangeScriptsInOrder() throws Exception {
-		when(appliedChangesProvider.getAppliedChanges()).thenReturn(Collections.<Long>emptyList());
+		when(appliedChangesProvider.findChangeLogEntryIds()).thenReturn(Collections.<Long>emptyList());
 
 		controller.processChangeScripts(Long.MAX_VALUE);
 
@@ -56,14 +56,14 @@ public class ControllerTest {
 	public void shouldNotCrashWhenPassedANullUndoApplier() throws Exception {
 		controller = new Controller(availableChangeScriptsProvider, appliedChangesProvider, applier, null);
 
-		when(appliedChangesProvider.getAppliedChanges()).thenReturn(Collections.<Long>emptyList());
+		when(appliedChangesProvider.findChangeLogEntryIds()).thenReturn(Collections.<Long>emptyList());
 
 		controller.processChangeScripts(Long.MAX_VALUE);
 	}
 
 	@Test
 	public void shouldApplyUndoScriptsInReverseOrder() throws Exception {
-		when(appliedChangesProvider.getAppliedChanges()).thenReturn(Collections.<Long>emptyList());
+		when(appliedChangesProvider.findChangeLogEntryIds()).thenReturn(Collections.<Long>emptyList());
 
 		controller.processChangeScripts(Long.MAX_VALUE);
 
@@ -76,7 +76,7 @@ public class ControllerTest {
 
 	@Test
 	public void shouldIgnoreChangesAlreadyAppliedToTheDatabase() throws Exception {
-		when(appliedChangesProvider.getAppliedChanges()).thenReturn(Arrays.asList(1L));
+		when(appliedChangesProvider.findChangeLogEntryIds()).thenReturn(Arrays.asList(1L));
 
 		controller.processChangeScripts(Long.MAX_VALUE);
 
@@ -87,7 +87,7 @@ public class ControllerTest {
 
 	@Test
 	public void shouldNotApplyChangesGreaterThanTheMaxChangeToApply() throws Exception {
-		when(appliedChangesProvider.getAppliedChanges()).thenReturn(Collections.<Long>emptyList());
+		when(appliedChangesProvider.findChangeLogEntryIds()).thenReturn(Collections.<Long>emptyList());
 
 		controller.processChangeScripts(2L);
 
@@ -96,14 +96,11 @@ public class ControllerTest {
 		assertThat(applier.changeScripts.get(1), is(change2));
 	}
 
-
-
     private class StubChangeScriptApplier implements ChangeScriptApplier {
         private List<ChangeScript> changeScripts;
 
         public void apply(List<ChangeScript> changeScripts) {
             this.changeScripts = new ArrayList<ChangeScript>(changeScripts);
         }
-
     }
 }

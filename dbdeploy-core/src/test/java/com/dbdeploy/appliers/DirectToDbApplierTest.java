@@ -5,7 +5,6 @@ import com.dbdeploy.database.changelog.DatabaseSchemaVersionManager;
 import com.dbdeploy.database.changelog.QueryExecuter;
 import com.dbdeploy.exceptions.ChangeScriptFailedException;
 import com.dbdeploy.scripts.ChangeScript;
-import com.dbdeploy.scripts.StubChangeScript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +42,7 @@ public class DirectToDbApplierTest {
 	public void shouldApplyChangeScriptBySplittingContentUsingTheSplitter() throws Exception {
         when(splitter.split("split; content")).thenReturn(Arrays.asList("split", "content"));
 
-		applier.applyChangeScript(new StubChangeScript(1, "script", "split; content"));
+		applier.applyChangeScript(new ChangeScript(1, "script", "split; content", "undoContent1"));
 		
 		verify(queryExecuter).execute("split");
 		verify(queryExecuter).execute("content");
@@ -52,7 +51,7 @@ public class DirectToDbApplierTest {
 	@Test
 	public void shouldRethrowSqlExceptionsWithInformationAboutWhatStringFailed() throws Exception {
 		when(splitter.split("split; content")).thenReturn(Arrays.asList("split", "content"));
-		ChangeScript script = new StubChangeScript(1, "script", "split; content");
+		ChangeScript script = new ChangeScript(1, "script", "split; content", "undoContent1");
 
 		doThrow(new SQLException("dummy exception")).when(queryExecuter).execute("split");
 
@@ -69,7 +68,7 @@ public class DirectToDbApplierTest {
 
 	@Test
 	public void shouldInsertToSchemaVersionTable() throws Exception {
-		ChangeScript changeScript = new ChangeScript(1, "script.sql");
+		ChangeScript changeScript = new ChangeScript(1, "script.sql", "doContent1", "undoContent1");
 
 		applier.insertToSchemaVersionTable(changeScript);
 

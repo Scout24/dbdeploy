@@ -14,10 +14,10 @@ public class ChangeScriptRepositoryTest {
 
 	@Test
 	public void shouldReturnAnOrderedListOfChangeScripts() throws Exception {
-		ChangeScript one = new ChangeScript(1);
-		ChangeScript two = new ChangeScript(2);
-		ChangeScript three = new ChangeScript(3);
-		ChangeScript four = new ChangeScript(4);
+		ChangeScript one = new ChangeScript(1, "descripiont1", "doContent1", "undoContent1");
+		ChangeScript two = new ChangeScript(2, "descripiont2", "doContent2", "undoContent2");
+		ChangeScript three = new ChangeScript(3, "descripiont3", "doContent3", "undoContent3");
+		ChangeScript four = new ChangeScript(4, "descripiont4", "doContent4", "undoContent4");
 		
 		ChangeScriptRepository repository = new ChangeScriptRepository(Arrays.asList( three, two, four, one ));
 		
@@ -31,9 +31,9 @@ public class ChangeScriptRepositoryTest {
 	
 	@Test
 	public void shouldThrowWhenChangeScriptListContainsDuplicates() throws Exception {
-		ChangeScript two = new ChangeScript(2);
-		ChangeScript three = new ChangeScript(3);
-		ChangeScript anotherTwo = new ChangeScript(2);
+		ChangeScript two = new ChangeScript(2, "descripiont2", "doContent2", "undoContent2");
+		ChangeScript three = new ChangeScript(3, "descripiont3", "doContent3", "undoContent3");
+		ChangeScript anotherTwo = new ChangeScript(2, "descripiont2", "doContent2", "undoContent2");
 		
 		try {
 			new ChangeScriptRepository(Arrays.asList(three, two, anotherTwo));
@@ -45,8 +45,8 @@ public class ChangeScriptRepositoryTest {
 
 	@Test
     public void shouldAllowChangeScriptsThatStartFromZero() throws Exception {
-        ChangeScript zero = new ChangeScript(0);
-        ChangeScript four = new ChangeScript(4);
+        ChangeScript zero = new ChangeScript(0, "descripiont0", "doContent0", "undoContent0");
+        ChangeScript four = new ChangeScript(4, "descripiont4", "doContent4", "undoContent4");
 
         ChangeScriptRepository repository = new ChangeScriptRepository(Arrays.asList( zero, four ));
 

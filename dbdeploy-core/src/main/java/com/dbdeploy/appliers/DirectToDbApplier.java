@@ -69,6 +69,4 @@ public class DirectToDbApplier implements ChangeScriptApplier {
 			throw new RuntimeException();
 		}
 	}
-
-
 }

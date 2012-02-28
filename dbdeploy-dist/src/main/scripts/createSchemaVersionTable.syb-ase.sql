@@ -2,7 +2,8 @@ CREATE TABLE changelog (
   change_number NUMERIC(22,0) NOT NULL,
   complete_dt DATETIME NOT NULL,
   applied_by VARCHAR(100) NOT NULL,
-  description VARCHAR(500) NOT NULL
+  description VARCHAR(500) NOT NULL,
+  checksum VARCHAR(100) NOT NULL
 )
 GO
 

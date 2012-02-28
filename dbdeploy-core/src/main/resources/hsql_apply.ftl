@@ -9,8 +9,8 @@
 
 ${script.content}
 
-INSERT INTO ${changeLogTableName} (change_number, complete_dt, applied_by, description)
- VALUES (${script.id?c}, CURRENT_TIMESTAMP, USER(), '${script.description}')${separator}${delimiter}
+INSERT INTO ${changeLogTableName} (change_number, complete_dt, applied_by, description, checksum)
+ VALUES (${script.id?c}, CURRENT_TIMESTAMP, USER(), '${script.description}', '${script.checksum}')${separator}${delimiter}
 
 COMMIT${separator}${delimiter}
 

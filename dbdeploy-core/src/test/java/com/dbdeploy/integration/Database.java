@@ -1,16 +1,23 @@
 package com.dbdeploy.integration;
 
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+
 import com.dbdeploy.DbDeploy;
+import com.dbdeploy.database.changelog.ChangeLogEntry;
 import com.dbdeploy.database.changelog.DatabaseSchemaVersionManager;
 import com.dbdeploy.database.changelog.QueryExecuter;
 import com.dbdeploy.exceptions.SchemaVersionTrackingException;
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Database {
 	String connectionString;
@@ -43,7 +50,8 @@ public class Database {
 				"  change_number INTEGER NOT NULL, " +
 				"  complete_dt TIMESTAMP NOT NULL, " +
 				"  applied_by VARCHAR(100) NOT NULL, " +
-				"  description VARCHAR(500) NOT NULL " +
+				"  description VARCHAR(500) NOT NULL, " +
+				"  checksum VARCHAR(100)" +
 				")");
 
 		execute("ALTER TABLE " + changeLogTableName +
@@ -97,12 +105,23 @@ public class Database {
 
 		return results;
 	}
+	
+	public List<Long> findChangeLogEntryIds() throws SchemaVersionTrackingException, SQLException {
+		final List<ChangeLogEntry> changeLogEntries = getChangelogEntries();
+		final List<Long> ids = new ArrayList<Long>();
+		
+		for (final ChangeLogEntry changeLogEntry: changeLogEntries) {
+			ids.add(changeLogEntry.getId());
+		}
+		
+		return ids;
+	}
 
-	public List<Long> getChangelogEntries() throws SchemaVersionTrackingException, SQLException {
+	public List<ChangeLogEntry> getChangelogEntries() throws SchemaVersionTrackingException, SQLException {
 		final QueryExecuter queryExecuter = new QueryExecuter(connectionString, DATABASE_USERNAME, DATABASE_PASSWORD);
 
-		DatabaseSchemaVersionManager schemaVersionManager =
+		final DatabaseSchemaVersionManager schemaVersionManager =
                 new DatabaseSchemaVersionManager(queryExecuter, changeLogTableName);
-		return schemaVersionManager.getAppliedChanges();
+		return schemaVersionManager.findChangeLogEntries();
 	}
 }
