@@ -113,14 +113,6 @@
 
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>is24.3rdparty</id>
-            <name>Releases</name>
-            <url>http://devnex.rz.is24.loc/content/repositories/thirdparty/</url>
-        </repository>
-    </distributionManagement>
-
     <dependencies>
 
         <dependency>
