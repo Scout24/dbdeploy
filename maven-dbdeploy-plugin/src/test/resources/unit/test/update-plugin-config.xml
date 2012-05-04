@@ -2,7 +2,7 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-dbdeploy-plugin</artifactId>
+                <artifactId>maven-dbdeploy-checksum-plugin</artifactId>
                 <configuration>
                     <scriptdirectory>.</scriptdirectory>
                     <driver>org.hsqldb.jdbcDriver</driver>
