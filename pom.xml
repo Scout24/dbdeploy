@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.dbdeploy</groupId>
-    <artifactId>dbdeploy-parent</artifactId>
+    <artifactId>dbdeploy-checksum-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.3-SNAPSHOT</version>
     <name>dbdeploy</name>
     <description>dbdeploy: java tools to manage agile database management</description>
     <url>http://www.dbdeploy.com</url>
@@ -23,16 +23,9 @@
   </modules>
 
     <scm>
-        <!--
-                      This github account is used as a staging area for dbdeploy commits.
-                      Currently all checkins are mirred to the google code svn repository
-                      at http://dbdeploy.googlecode.com/svn/trunk/
-
-                      This may change in due course - git makes collaberation so much easier...
-                  -->
-        <url>http://github.com/tackley/dbdeploy</url>
-        <connection>scm:git:git://github.com/tackley/dbdeploy.git</connection>
-        <developerConnection>scm:git:git@github.com:tackley/dbdeploy.git</developerConnection>
+        <url>http://svn.iscout.local/viewvc/is24/common/dbdeploy-with-checksum/trunk?root=int</url>
+        <connection>scm:svn:svn://svn.iscout.local/int/is24/common/dbdeploy-with-checksum/trunk</connection>
+        <developerConnection>scm:svn:svn://svn.iscout.local/int/is24/common/dbdeploy-with-checksum/trunk</developerConnection>
     </scm>
 
     <licenses>
@@ -112,6 +105,21 @@
         </pluginManagement>
 
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>is24.3rdparty</id>
+            <name>Releases</name>
+            <url>http://devnex.rz.is24.loc/content/repositories/thirdparty/</url>
+        </repository>
+
+        <snapshotRepository>
+           <id>snapshots</id>
+           <name>Snapshots</name>
+           <url>http://devnex.rz.is24.loc/content/repositories/snapshots/</url>
+           <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencies>
 

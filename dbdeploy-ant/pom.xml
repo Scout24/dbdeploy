@@ -3,11 +3,11 @@
 
     <parent>
         <groupId>com.dbdeploy</groupId>
-        <artifactId>dbdeploy-parent</artifactId>
-        <version>3.0-SNAPSHOT</version>
+        <artifactId>dbdeploy-checksum-parent</artifactId>
+        <version>3.3-SNAPSHOT</version>
     </parent>
 
-    <artifactId>dbdeploy-ant</artifactId>
+    <artifactId>dbdeploy-checksum-ant</artifactId>
     <packaging>jar</packaging>
     <name>dbdeploy-ant</name>
     <description>ant plugin to invoke dbdeploy</description>
@@ -45,7 +45,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dbdeploy-core</artifactId>
+            <artifactId>dbdeploy-checksum-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

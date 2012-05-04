@@ -3,11 +3,11 @@
 
     <parent>
         <groupId>com.dbdeploy</groupId>
-        <artifactId>dbdeploy-parent</artifactId>
-        <version>3.0-SNAPSHOT</version>
+        <artifactId>dbdeploy-checksum-parent</artifactId>
+        <version>3.3-SNAPSHOT</version>
     </parent>
 
-    <artifactId>dbdeploy-cli</artifactId>
+    <artifactId>dbdeploy-checksum-cli</artifactId>
     <packaging>jar</packaging>
     <name>dbdeploy-cli</name>
     <description>Command line interface to dbdeploy</description>
@@ -61,7 +61,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dbdeploy-core</artifactId>
+            <artifactId>dbdeploy-checksum-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
