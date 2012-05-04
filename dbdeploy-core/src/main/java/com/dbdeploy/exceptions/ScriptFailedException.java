@@ -1,23 +1,23 @@
 package com.dbdeploy.exceptions;
 
-import com.dbdeploy.scripts.ChangeScript;
-
+import com.dbdeploy.scripts.Script;
 import java.sql.SQLException;
 
-public class ChangeScriptFailedException extends DbDeployException {
-	private final ChangeScript script;
+
+public class ScriptFailedException extends DbDeployException {
+	private final Script script;
 	private final int statement;
 	private final String executedSql;
 
-	public ChangeScriptFailedException(SQLException cause, ChangeScript script,
-	                                   int statement, String executedSql) {
+	public ScriptFailedException(SQLException cause, Script script,
+								 int statement, String executedSql) {
 		super(cause);
 		this.script = script;
 		this.statement = statement;
 		this.executedSql = executedSql;
 	}
 
-	public ChangeScript getScript() {
+	public Script getScript() {
 		return script;
 	}
 
@@ -32,7 +32,7 @@ public class ChangeScriptFailedException extends DbDeployException {
 	@Override
 	public String getMessage() {
 		return "change script " + script +
-				" failed while executing statement " + statement + ":\n"
-				+ executedSql + "\n -> " + getCause().getMessage();
+			" failed while executing statement " + statement + ":\n" +
+			executedSql + "\n -> " + getCause().getMessage();
 	}
 }

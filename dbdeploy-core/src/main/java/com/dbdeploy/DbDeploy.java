@@ -11,9 +11,10 @@ import com.dbdeploy.database.changelog.QueryExecuter;
 import com.dbdeploy.exceptions.UsageException;
 import com.dbdeploy.scripts.ChangeScriptRepository;
 import com.dbdeploy.scripts.DirectoryScanner;
-
+import com.dbdeploy.scripts.Script;
 import java.io.File;
 import java.io.PrintWriter;
+
 
 public class DbDeploy {
 	private String url;
@@ -31,6 +32,9 @@ public class DbDeploy {
 	private String delimiter = ";";
 	private DelimiterType delimiterType = DelimiterType.normal;
 	private File templatedir;
+
+	private File preScriptExecutionFile;
+	private File postScriptExecutionFile;
 
 	public void setDriver(String driver) {
 		this.driver = driver;
@@ -89,24 +93,28 @@ public class DbDeploy {
 
 		QueryExecuter queryExecuter = new QueryExecuter(url, userid, password);
 
-		DatabaseSchemaVersionManager databaseSchemaVersionManager =
-				new DatabaseSchemaVersionManager(queryExecuter, changeLogTableName);
+		DatabaseSchemaVersionManager databaseSchemaVersionManager = new DatabaseSchemaVersionManager(queryExecuter,
+			changeLogTableName);
 
-		ChangeScriptRepository changeScriptRepository =
-				new ChangeScriptRepository(new DirectoryScanner(encoding).getChangeScriptsForDirectory(scriptdirectory));
+		ChangeScriptRepository changeScriptRepository = new ChangeScriptRepository(new DirectoryScanner(encoding)
+			.getChangeScriptsForDirectory(scriptdirectory));
 
 		ChangeScriptApplier doScriptApplier;
 
 		if (outputfile != null) {
 			doScriptApplier = new TemplateBasedApplier(
-					new PrintWriter(outputfile, encoding), dbms,
-					changeLogTableName, delimiter, delimiterType, getTemplatedir());
+				new PrintWriter(outputfile, encoding), dbms,
+				changeLogTableName, delimiter, delimiterType, getTemplatedir());
 		} else {
 			QueryStatementSplitter splitter = new QueryStatementSplitter();
 			splitter.setDelimiter(getDelimiter());
 			splitter.setDelimiterType(getDelimiterType());
 			splitter.setOutputLineEnding(lineEnding);
-			doScriptApplier = new DirectToDbApplier(queryExecuter, databaseSchemaVersionManager, splitter);
+
+			DirectToDbApplier directToDbApplier = new DirectToDbApplier(queryExecuter, databaseSchemaVersionManager,
+				splitter);
+			addPrePostScriptIfSet(directToDbApplier);
+			doScriptApplier = directToDbApplier;
 		}
 
 		ChangeScriptApplier undoScriptApplier = null;
@@ -117,11 +125,21 @@ public class DbDeploy {
 
 		}
 
-		Controller controller = new Controller(changeScriptRepository, databaseSchemaVersionManager, doScriptApplier, undoScriptApplier);
+		Controller controller = new Controller(changeScriptRepository, databaseSchemaVersionManager, doScriptApplier,
+			undoScriptApplier);
 
 		controller.processChangeScripts(lastChangeToApply);
 
 		queryExecuter.close();
+	}
+
+	private void addPrePostScriptIfSet(DirectToDbApplier directToDbApplier) {
+		if (getPreScriptExecutionFile() != null) {
+			directToDbApplier.setPreScriptExecutionScript(new Script(getPreScriptExecutionFile(), encoding));
+		}
+		if (getPostScriptExecutionFile() != null) {
+			directToDbApplier.setPostScriptExecutionScript(new Script(getPostScriptExecutionFile(), encoding));
+		}
 	}
 
 	private void validate() throws UsageException {
@@ -130,13 +148,23 @@ public class DbDeploy {
 		checkForRequiredParameter(url, "url");
 		checkForRequiredParameter(scriptdirectory, "dir");
 
-		if (scriptdirectory == null || !scriptdirectory.isDirectory()) {
+		checkScriptFile(preScriptExecutionFile, "pre");
+		checkScriptFile(postScriptExecutionFile, "post");
+
+		if ((scriptdirectory == null) || !scriptdirectory.isDirectory()) {
 			throw new UsageException("Script directory must point to a valid directory");
 		}
 	}
 
+	private void checkScriptFile(File scriptExecutionFile, String prefix) {
+		if ((scriptExecutionFile != null) && !scriptExecutionFile.exists()) {
+			throw new UsageException(prefix + " script execution file " + scriptExecutionFile.getAbsolutePath() +
+				" must exist if set");
+		}
+	}
+
 	private void checkForRequiredParameter(String parameterValue, String parameterName) throws UsageException {
-		if (parameterValue == null || parameterValue.length() == 0) {
+		if ((parameterValue == null) || (parameterValue.length() == 0)) {
 			UsageException.throwForMissingRequiredValue(parameterName);
 		}
 	}
@@ -213,8 +241,8 @@ public class DbDeploy {
 	}
 
 	public String getWelcomeString() {
-        String version = getClass().getPackage().getImplementationVersion();
-        return "dbdeploy " + version;
+		String version = getClass().getPackage().getImplementationVersion();
+		return "dbdeploy " + version;
 	}
 
 	public String getEncoding() {
@@ -223,5 +251,21 @@ public class DbDeploy {
 
 	public LineEnding getLineEnding() {
 		return lineEnding;
+	}
+
+	public File getPreScriptExecutionFile() {
+		return preScriptExecutionFile;
+	}
+
+	public void setPreScriptExecutionFile(File preScriptExecutionFile) {
+		this.preScriptExecutionFile = preScriptExecutionFile;
+	}
+
+	public File getPostScriptExecutionFile() {
+		return postScriptExecutionFile;
+	}
+
+	public void setPostScriptExecutionFile(File postScriptExecutionFile) {
+		this.postScriptExecutionFile = postScriptExecutionFile;
 	}
 }
